@@ -64,9 +64,9 @@
                 <h1 class="text-4xl sm:text-6xl font-bold text-text mb-6">Welcome to {{ env('APP_NAME') }}</h1>
                 <p class="text-secondary text-lg sm:text-xl max-w-2xl mx-auto mb-8">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis accumsan ante nunc, non pharetra dui tincidunt id. Aenean sollicitudin vestibulum lacus quis egestas.                </p>
-                <button class="bg-primary border border-accent/50 text-text px-6 py-3 rounded-lg transition-all duration-300 hover:bg-primary/90 hover:border-accent hover:shadow-lg hover:shadow-accent/20 hover:scale-105 hover:-translate-y-1 welcome-fade-in">
+                <a href="{{ route('dashboard') }}" class="bg-primary border border-accent/50 text-text px-6 py-3 rounded-lg transition-all duration-300 hover:bg-primary/90 hover:border-accent hover:shadow-lg hover:shadow-accent/20 hover:scale-105 hover:-translate-y-1 welcome-fade-in">
                     Get Started
-                </button>
+                </a>
             </div>
         </main>
     @endsection
