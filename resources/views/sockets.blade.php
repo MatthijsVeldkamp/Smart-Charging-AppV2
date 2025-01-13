@@ -11,6 +11,11 @@
                 </p>
             </div>
 
+            <!-- Loading Spinner -->
+            <div id="loading-spinner" class="hidden">
+                <div class="loader"></div>
+            </div>
+
             <!-- Formulier voor nieuwe meter -->
             <div class="bg-primary/50 p-6 rounded-lg border border-accent/50 max-w-md w-full">
                 <h2 class="text-2xl font-bold mb-4 text-text">Nieuwe Slimme Meter Toevoegen</h2>
@@ -95,6 +100,10 @@
                 const button = document.querySelector(`.toggle-btn[data-meter-id="${meterId}"]`);
                 button.disabled = true;
 
+                // Show loading spinner
+                const loadingSpinner = document.getElementById('loading-spinner');
+                loadingSpinner.classList.remove('hidden');
+
                 fetch(`/smart-meters/${meterId}/toggle`, {
                     method: 'POST',
                     headers: {
@@ -118,9 +127,33 @@
                 })
                 .finally(() => {
                     button.disabled = false;
+                    loadingSpinner.classList.add('hidden'); // Hide loading spinner
                 });
             }
         </script>
+        <style>
+            /* Spinner styles */
+            #loading-spinner {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 20px 0;
+            }
+
+            .loader {
+                border: 8px solid #f3f3f3; /* Light grey */
+                border-top: 8px solid #3498db; /* Blue */
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
         @endpush
     @endsection
 </x-app-layout>

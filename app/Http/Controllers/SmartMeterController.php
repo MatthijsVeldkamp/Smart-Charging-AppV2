@@ -66,4 +66,35 @@ class SmartMeterController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get the status of all sockets.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAllSocketStatuses()
+    {
+        // Retrieve all smart meters from the database
+        $smartMeters = SmartMeter::all();
+        $statuses = [];
+
+        foreach ($smartMeters as $smartMeter) {
+            try {
+                $mqtt = MQTT::connection();
+                $topic = "stat/tasmota_" . $smartMeter->socket_id . "/POWER"; // Adjust the topic based on your socket ID
+
+                // Publish the command to get the status
+                $mqtt->publish($topic, '', 0); // Sending an empty payload to request the status
+                $mqtt->disconnect();
+
+                // Here you would typically listen for the response, but for simplicity, we will just store a placeholder
+                $statuses[$smartMeter->socket_id] = 'Requested status'; // Placeholder for actual status
+            } catch (\Exception $e) {
+                \Log::error('MQTT connection failed for socket ' . $smartMeter->socket_id . ': ' . $e->getMessage());
+                $statuses[$smartMeter->socket_id] = 'Error retrieving status';
+            }
+        }
+
+        return response()->json($statuses);
+    }
 } 

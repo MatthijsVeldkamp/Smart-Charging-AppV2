@@ -12,7 +12,7 @@
         "php": "^8.2",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
-        "php-mqtt/client": "^2.2"
+        "php-mqtt/client": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

@@ -33,6 +33,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/sockets', [SmartMeterController::class, 'index'])->name('sockets');
     Route::post('/smart-meters', [SmartMeterController::class, 'store'])->name('smart-meters.store');
     Route::post('/smart-meters/{smartMeter}/toggle', [SmartMeterController::class, 'togglePower'])->name('smart-meters.toggle');
+    Route::delete('/smart-meters/{smartMeter}', [SmartMeterController::class, 'destroy'])->name('smart-meters.destroy');
 });
+
+Route::get('/socket-statuses', [SmartMeterController::class, 'getAllSocketStatuses'])->middleware('auth');
 
 require __DIR__.'/auth.php';
