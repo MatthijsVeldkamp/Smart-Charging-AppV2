@@ -48,12 +48,20 @@
                         <div class="bg-primary/50 p-4 rounded-lg border border-accent/50">
                             <div class="flex justify-between items-start mb-2">
                                 <h3 class="font-bold text-lg">{{ $meter->name }}</h3>
-                                <button onclick="toggleSocket({{ $meter->id }})" 
-                                        class="toggle-btn px-3 py-1 rounded-md text-sm font-medium transition-colors"
-                                        data-status="{{ $meter->status }}"
-                                        data-meter-id="{{ $meter->id }}">
-                                    {{ $meter->status === 'active' ? 'Aan' : 'Uit' }}
-                                </button>
+                                <div class="flex space-x-2">
+                                    <button data-action="on" 
+                                            data-meter-id="{{ $meter->id }}"
+                                            class="power-btn-on px-3 py-1 rounded-md text-sm font-medium transition-colors {{ $meter->status === 'active' ? 'bg-green-500 cursor-not-allowed opacity-50' : 'bg-green-500 hover:bg-green-600' }}"
+                                            {{ $meter->status === 'active' ? 'disabled' : '' }}>
+                                        Aan
+                                    </button>
+                                    <button data-action="off"
+                                            data-meter-id="{{ $meter->id }}"
+                                            class="power-btn-off px-3 py-1 rounded-md text-sm font-medium transition-colors {{ $meter->status === 'inactive' ? 'bg-red-500 cursor-not-allowed opacity-50' : 'bg-red-500 hover:bg-red-600' }}"
+                                            {{ $meter->status === 'inactive' ? 'disabled' : '' }}>
+                                        Uit
+                                    </button>
+                                </div>
                             </div>
                             <p class="text-sm text-secondary">ID: {{ $meter->socket_id }}</p>
                             <p class="text-sm text-secondary status-text" data-meter-id="{{ $meter->id }}">
@@ -70,15 +78,21 @@
 
         @push('scripts')
         <script>
-            function updateButtonStyle(button, status) {
+            // Definieer functies in de globale scope
+            function updateButtonStates(meterId, status) {
+                const onButton = document.querySelector(`.power-btn-on[data-meter-id="${meterId}"]`);
+                const offButton = document.querySelector(`.power-btn-off[data-meter-id="${meterId}"]`);
+                
                 if (status === 'active') {
-                    button.classList.remove('bg-red-500', 'hover:bg-red-600');
-                    button.classList.add('bg-green-500', 'hover:bg-green-600');
-                    button.textContent = 'Aan';
+                    onButton.classList.add('cursor-not-allowed', 'opacity-50');
+                    onButton.disabled = true;
+                    offButton.classList.remove('cursor-not-allowed', 'opacity-50');
+                    offButton.disabled = false;
                 } else {
-                    button.classList.remove('bg-green-500', 'hover:bg-green-600');
-                    button.classList.add('bg-red-500', 'hover:bg-red-600');
-                    button.textContent = 'Uit';
+                    offButton.classList.add('cursor-not-allowed', 'opacity-50');
+                    offButton.disabled = true;
+                    onButton.classList.remove('cursor-not-allowed', 'opacity-50');
+                    onButton.disabled = false;
                 }
             }
 
@@ -89,34 +103,36 @@
                 }
             }
 
-            // Initialize button styles
-            document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('.toggle-btn').forEach(button => {
-                    updateButtonStyle(button, button.dataset.status);
-                });
-            });
-
-            function toggleSocket(meterId) {
-                const button = document.querySelector(`.toggle-btn[data-meter-id="${meterId}"]`);
-                button.disabled = true;
-
-                // Show loading spinner
+            function setPower(meterId, action) {
+                console.log('setPower called:', meterId, action);
+                
                 const loadingSpinner = document.getElementById('loading-spinner');
                 loadingSpinner.classList.remove('hidden');
 
-                fetch(`/smart-meters/${meterId}/toggle`, {
+                const onButton = document.querySelector(`.power-btn-on[data-meter-id="${meterId}"]`);
+                const offButton = document.querySelector(`.power-btn-off[data-meter-id="${meterId}"]`);
+                onButton.disabled = true;
+                offButton.disabled = true;
+
+                console.log('Sending fetch request...');
+                fetch(`/smart-meters/${meterId}/power`, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json',
+                        'Content-Type': 'application/json'
                     },
+                    body: JSON.stringify({ action: action })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Response received:', response);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Data received:', data);
                     if (data.success) {
-                        updateButtonStyle(button, data.status);
+                        updateButtonStates(meterId, data.status);
                         updateStatusText(meterId, data.status);
-                        button.dataset.status = data.status;
                     } else {
                         alert('Er is een fout opgetreden bij het schakelen van de socket.');
                     }
@@ -126,10 +142,45 @@
                     alert('Er is een fout opgetreden bij het schakelen van de socket.');
                 })
                 .finally(() => {
-                    button.disabled = false;
-                    loadingSpinner.classList.add('hidden'); // Hide loading spinner
+                    loadingSpinner.classList.add('hidden');
+                    onButton.disabled = false;
+                    offButton.disabled = false;
                 });
             }
+
+            function updateAllSocketStatuses() {
+                fetch('/socket-statuses', {
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Object.entries(data.statuses).forEach(([meterId, status]) => {
+                            updateButtonStates(meterId, status);
+                            updateStatusText(meterId, status);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error updating statuses:', error));
+            }
+
+            // Wacht tot het document geladen is
+            document.addEventListener('DOMContentLoaded', function() {
+                // Event listeners voor de knoppen
+                document.querySelectorAll('.power-btn-on, .power-btn-off').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const meterId = this.dataset.meterId;
+                        const action = this.dataset.action;
+                        setPower(meterId, action);
+                    });
+                });
+
+                // Start de automatische updates
+                updateAllSocketStatuses();
+                setInterval(updateAllSocketStatuses, 30000);
+            });
         </script>
         <style>
             /* Spinner styles */
