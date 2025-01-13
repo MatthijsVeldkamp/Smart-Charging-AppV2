@@ -13,8 +13,6 @@ return new class extends Migration
             $table->string('socket_id')->unique();
             $table->string('name');
             $table->string('status')->default('inactive');
-            $table->decimal('current_power', 10, 2)->nullable();
-            $table->decimal('total_energy', 10, 2)->nullable();
             $table->timestamps();
         });
     }

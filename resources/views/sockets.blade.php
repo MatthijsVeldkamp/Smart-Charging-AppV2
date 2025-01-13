@@ -49,18 +49,21 @@
                             <div class="flex justify-between items-start mb-2">
                                 <h3 class="font-bold text-lg">{{ $meter->name }}</h3>
                                 <div class="flex space-x-2">
-                                    <button data-action="on" 
+                                    <button onclick="setPower({{ $meter->id }}, 'on')"
+                                            data-action="on" 
                                             data-meter-id="{{ $meter->id }}"
                                             class="power-btn-on px-3 py-1 rounded-md text-sm font-medium transition-colors {{ $meter->status === 'active' ? 'bg-green-500 cursor-not-allowed opacity-50' : 'bg-green-500 hover:bg-green-600' }}"
                                             {{ $meter->status === 'active' ? 'disabled' : '' }}>
                                         Aan
                                     </button>
-                                    <button data-action="off"
+                                    <button onclick="setPower({{ $meter->id }}, 'off')"
+                                            data-action="off"
                                             data-meter-id="{{ $meter->id }}"
                                             class="power-btn-off px-3 py-1 rounded-md text-sm font-medium transition-colors {{ $meter->status === 'inactive' ? 'bg-red-500 cursor-not-allowed opacity-50' : 'bg-red-500 hover:bg-red-600' }}"
                                             {{ $meter->status === 'inactive' ? 'disabled' : '' }}>
                                         Uit
                                     </button>
+                                </div>
                                 </div>
                             </div>
                             <p class="text-sm text-secondary">ID: {{ $meter->socket_id }}</p>
@@ -76,12 +79,13 @@
             </div>
         </main>
 
-        @push('scripts')
+        
         <script>
             // Definieer functies in de globale scope
             function updateButtonStates(meterId, status) {
                 const onButton = document.querySelector(`.power-btn-on[data-meter-id="${meterId}"]`);
                 const offButton = document.querySelector(`.power-btn-off[data-meter-id="${meterId}"]`);
+                const statusText = document.querySelector(`.status-text[data-meter-id="${meterId}"]`);
                 
                 if (status === 'active') {
                     onButton.classList.add('cursor-not-allowed', 'opacity-50');
@@ -94,29 +98,25 @@
                     onButton.classList.remove('cursor-not-allowed', 'opacity-50');
                     onButton.disabled = false;
                 }
-            }
 
-            function updateStatusText(meterId, status) {
-                const statusText = document.querySelector(`.status-text[data-meter-id="${meterId}"]`);
+                // Update status text
                 if (statusText) {
                     statusText.textContent = `Status: ${status === 'active' ? 'Actief' : 'Inactief'}`;
                 }
             }
 
             function setPower(meterId, action) {
-                console.log('setPower called:', meterId, action);
-                
                 const loadingSpinner = document.getElementById('loading-spinner');
-                loadingSpinner.classList.remove('hidden');
-
                 const onButton = document.querySelector(`.power-btn-on[data-meter-id="${meterId}"]`);
                 const offButton = document.querySelector(`.power-btn-off[data-meter-id="${meterId}"]`);
+                
+                // Disable both buttons during request
                 onButton.disabled = true;
                 offButton.disabled = true;
+                loadingSpinner.classList.remove('hidden');
 
-                console.log('Sending fetch request...');
                 fetch(`/smart-meters/${meterId}/power`, {
-                    method: 'POST',
+                    method: 'POST', 
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json',
@@ -124,46 +124,37 @@
                     },
                     body: JSON.stringify({ action: action })
                 })
-                .then(response => {
-                    console.log('Response received:', response);
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    console.log('Data received:', data);
                     if (data.success) {
                         updateButtonStates(meterId, data.status);
-                        updateStatusText(meterId, data.status);
+                        
+                        // Success feedback
+                        const button = action === 'on' ? onButton : offButton;
+                        button.classList.add('bg-green-500');
+                        setTimeout(() => {
+                            button.classList.remove('bg-green-500');
+                        }, 1000);
                     } else {
-                        alert('Er is een fout opgetreden bij het schakelen van de socket.');
+                        throw new Error(data.message || 'Er ging iets mis');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Er is een fout opgetreden bij het schakelen van de socket.');
+                    alert('Er ging iets mis bij het schakelen van de socket: ' + error.message);
+                    
+                    // Error feedback
+                    const button = action === 'on' ? onButton : offButton;
+                    button.classList.add('bg-red-500');
+                    setTimeout(() => {
+                        button.classList.remove('bg-red-500');
+                    }, 1000);
                 })
                 .finally(() => {
                     loadingSpinner.classList.add('hidden');
-                    onButton.disabled = false;
-                    offButton.disabled = false;
+                    // Re-enable buttons
+                    updateButtonStates(meterId, action === 'on' ? 'active' : 'inactive');
                 });
-            }
-
-            function updateAllSocketStatuses() {
-                fetch('/socket-statuses', {
-                    headers: {
-                        'Accept': 'application/json',
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Object.entries(data.statuses).forEach(([meterId, status]) => {
-                            updateButtonStates(meterId, status);
-                            updateStatusText(meterId, status);
-                        });
-                    }
-                })
-                .catch(error => console.error('Error updating statuses:', error));
             }
 
             // Wacht tot het document geladen is
@@ -178,9 +169,22 @@
                 });
 
                 // Start de automatische updates
-                updateAllSocketStatuses();
-                setInterval(updateAllSocketStatuses, 30000);
+                checkStatuses();
+                setInterval(checkStatuses, 30000);
             });
+
+            function checkStatuses() {
+                fetch('/socket-statuses')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Object.entries(data.statuses).forEach(([meterId, status]) => {
+                                updateButtonStates(meterId, status);
+                            });
+                        }
+                    })
+                    .catch(error => console.error('Error updating statuses:', error));
+            }
         </script>
         <style>
             /* Spinner styles */
@@ -205,6 +209,5 @@
                 100% { transform: rotate(360deg); }
             }
         </style>
-        @endpush
     @endsection
 </x-app-layout>
