@@ -56,7 +56,7 @@
             });
         </script>
 
-        <x-hamburger-menu />
+        <x-hamburger-menu/>
 
         <!-- Main Content -->
         <main class="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">

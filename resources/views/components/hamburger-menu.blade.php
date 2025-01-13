@@ -27,6 +27,10 @@
                 <i class="fas fa-globe w-5"></i>
                 <span class="ml-3 transition-transform duration-200 group-hover:translate-x-1">Language</span>
             </a>
+            <a href="#" class="group flex items-center py-2.5 px-4 text-text/80 hover:text-accent rounded-lg transition-all duration-200">
+                <i class="fas fa-plug w-5"></i>
+                <span class="ml-3 transition-transform duration-200 group-hover:translate-x-1">Sockets</span>
+            </a>
         </nav>
 
         <!-- Logout Section -->
