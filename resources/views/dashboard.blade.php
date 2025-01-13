@@ -30,6 +30,11 @@
                 {{ __('Dashboard') }}
             </h2>
         </x-slot>
+        
+        <div class="bg-primary/95 backdrop-blur-sm border border-white/10 rounded-lg p-6 shadow-lg max-w-md mx-auto mt-4">
+            <h3 class="text-lg font-semibold text-text">You are logged in as:</h3>
+            <p class="text-secondary font-medium">{{ Auth::user()->email }}</p>
+        </div>
 
         <main class="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
         </main>
