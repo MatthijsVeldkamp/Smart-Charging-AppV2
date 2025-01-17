@@ -3,27 +3,29 @@
     <x-hamburger-menu />
     <div class="fixed inset-0 z-0 animate-fade-in">
             <div class="absolute inset-0 bg-[linear-gradient(to_right,#1f1f1f_1px,transparent_1px),linear-gradient(to_bottom,#1f1f1f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_40%,transparent_100%)]" id="grid-background">
-                <!-- Centered 3x3 grid -->
-                <div class="grid-squares absolute w-full h-full transition-transform duration-1000 flex justify-center items-center" id="grid-set-1">
-                    <!-- Row 1 -->
-                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: calc(50% - 12rem); left: calc(50% - 12rem);"></div>
-                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: calc(50% - 12rem); left: calc(50% - 4rem);"></div>
-                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: calc(50% - 12rem); left: calc(50% + 4rem);"></div>
-                    
-                    <!-- Row 2 -->
-                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: calc(50% - 4rem); left: calc(50% - 12rem);"></div>
-                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: calc(50% - 4rem); left: calc(50% - 4rem);"></div>
-                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: calc(50% - 4rem); left: calc(50% + 4rem);"></div>
-                    
-                    <!-- Row 3 -->
-                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: calc(50% + 4rem); left: calc(50% - 12rem);"></div>
-                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: calc(50% + 4rem); left: calc(50% - 4rem);"></div>
-                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: calc(50% + 4rem); left: calc(50% + 4rem);"></div>
+                <!-- First set of grid squares -->
+                <div class="grid-squares absolute w-full h-full transition-transform duration-1000" id="grid-set-1">
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 4rem; left: 8rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 12rem; left: 20rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 8rem; left: 28rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 16rem; left: 16rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 20rem; left: 24rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 24rem; left: 12rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 28rem; left: 32rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 8rem; left: 40rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 16rem; left: 36rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 4rem; left: 24rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 32rem; left: 16rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 20rem; left: 44rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 28rem; left: 8rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 12rem; left: 48rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 36rem; left: 28rem;"></div>
                 </div>
+                
             </div>
         </div>
         <!-- Main Content -->
-        <main class="relative z-10 min-h-screen flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 py-12">
+        <main class="relative z-10 min-h-screen flex flex-col items-center px-4 sm:px-6 lg:px-8 py-12">
             <div class="text-center welcome-fade-in mb-12">
                 <h1 class="text-4xl sm:text-6xl font-bold text-text mb-6">Socket Beheer</h1>
                 <p class="text-secondary text-lg sm:text-xl max-w-2xl mx-auto mb-8">
@@ -31,22 +33,42 @@
                 </p>
             </div>
 
+
+
+            <!-- Formulier voor nieuwe meter -->
+            <div class="bg-primary/50 p-6 rounded-lg border border-accent/50 max-w-md w-full">
+                <h2 class="text-2xl font-bold mb-4 text-text">Nieuwe Slimme Meter Toevoegen</h2>
+                <form action="{{ route('smart-meters.store') }}" method="POST" class="space-y-4">
+                    @csrf
+                    <div>
+                        <label for="socket_id" class="block text-sm font-medium text-text mb-1">Socket ID</label>
+                        <input type="text" name="socket_id" id="socket_id" required 
+                               class="w-full px-3 py-2 bg-primary border border-accent/50 rounded-md focus:outline-none focus:border-accent"
+                               placeholder="Bijv. DDEAFC">
+                    </div>
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-text mb-1">Naam</label>
+                        <input type="text" name="name" id="name" required 
+                               class="w-full px-3 py-2 bg-primary border border-accent/50 rounded-md focus:outline-none focus:border-accent"
+                               placeholder="Bijv. Garage Laadpunt">
+                    </div>
+                    <button type="submit" 
+                            class="w-full bg-gray-900 text-text px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">
+                        Meter Toevoegen
+                    </button>
+                </form>
+            </div>
+
             <!-- Lijst van bestaande meters -->
-            <div class="mt-12 w-full max-w-4xl mx-auto">
+            <div class="mt-12 w-full max-w-4xl">
                 @if(count($smartMeters ?? []) > 0)
                     <h2 class="text-2xl font-bold mb-4 text-text">Geïnstalleerde Meters</h2>
                 @endif
-                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 place-items-center">
+                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     @foreach($smartMeters ?? [] as $meter)
                         <div class="bg-primary/50 p-4 rounded-lg border border-accent/50">
                             <div class="flex justify-between items-start mb-2">
-                                <div>
-                                    <h3 class="font-bold text-lg">{{ $meter->name }}</h3>
-                                    <p class="text-sm text-secondary">ID: {{ $meter->socket_id }}</p>
-                                    <p class="text-sm text-secondary status-text" data-meter-id="{{ $meter->id }}">
-                                        Status: {{ $meter->status === 'active' ? 'Actief' : 'Inactief' }}
-                                    </p>
-                                </div>
+                                <h3 class="font-bold text-lg">{{ $meter->name }}</h3>
                                 <div class="flex space-x-2">
                                     <button onclick="setPower({{ $meter->id }}, 'on')"
                                             data-action="on" 
@@ -62,17 +84,13 @@
                                             {{ $meter->status === 'inactive' ? 'disabled' : '' }}>
                                         Uit
                                     </button>
-                                    <form action="{{ route('smart-meters.destroy', $meter->id) }}" method="POST" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" 
-                                                class="px-3 py-1 rounded-md text-sm font-medium bg-gray-500 hover:bg-gray-600 transition-colors"
-                                                onclick="return confirm('Weet je zeker dat je deze socket wilt verwijderen?')">
-                                            Verwijder
-                                        </button>
-                                    </form>
+                                </div>
                                 </div>
                             </div>
+                            <p class="text-sm text-secondary">ID: {{ $meter->socket_id }}</p>
+                            <p class="text-sm text-secondary status-text" data-meter-id="{{ $meter->id }}">
+                                Status: {{ $meter->status === 'active' ? 'Actief' : 'Inactief' }}
+                            </p>
                             @if($meter->current_power)
                                 <p class="text-sm">Huidig verbruik: {{ $meter->current_power }}W</p>
                             @endif
