@@ -111,8 +111,7 @@ class SmartMeterController extends Controller
 
     public function show($id)
     {
-        $id = '2';
-        return view('sockets.socket', ['id' => $id]);
+        return view('sockets.socket');
     }
 
     public function destroy(SmartMeter $smartMeter)
