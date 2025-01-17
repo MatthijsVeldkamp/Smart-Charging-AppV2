@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\SmartMeterController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -37,8 +38,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/smart-meters/{smartMeter}/power', [SmartMeterController::class, 'setPower'])
         ->name('smart-meters.power')
         ->middleware('web');
+    Route::get('/adminpage', [AdminController::class, 'index']);
+
 });
 
 Route::get('/socket-statuses', [SmartMeterController::class, 'getAllSocketStatuses'])->middleware('auth');
+
 
 require __DIR__.'/auth.php';
