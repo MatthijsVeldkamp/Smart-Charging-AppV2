@@ -30,10 +30,28 @@
             <div class="bg-primary/50 p-6 rounded-lg border border-accent/50 max-w-md w-full">
                 <h2 class="text-2xl font-bold mb-4 text-text">Socket Details</h2>
                 @if(isset($error))
-                <p class="text-red-500">{{ $error }}</p>
+                    <p class="text-red-500">{{ $error }}</p>
                 @endif
                 @if(!isset($error))
-                    <p class="text-text">Socket ID: {{ $id }}</p>
+                    <div class="flex flex-col space-y-4">
+                        <p class="text-text">Socket ID: {{ $id }}</p>
+                        
+                        @if($role === 'Admin')
+                        <div class="flex items-center justify-between">
+                            <span class="text-text">Toegang tot socket:</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" id="powerToggle">
+                                <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none rounded-full peer 
+                                    peer-checked:after:translate-x-[28px] peer-checked:after:border-white 
+                                    after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
+                                    after:bg-white after:border-gray-300 after:border after:rounded-full 
+                                    after:h-6 after:w-6 after:transition-all peer-checked:bg-sky-400
+                                    peer-checked:border-sky-500 peer-checked:border-2">
+                                </div>
+                        @endif
+                            </label>
+                        </div>
+                    </div>
                 @endif
             </div>
         </main>

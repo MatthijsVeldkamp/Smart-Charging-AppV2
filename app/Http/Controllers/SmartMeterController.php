@@ -117,7 +117,10 @@ class SmartMeterController extends Controller
             return view('sockets.socket', ['error' => 'Socket niet met id: ' . $id . ' niet gevonden', 'id' => $id]);
         }
 
-        return view('sockets.socket', ['id' => $id]);
+        return view('sockets.socket', [
+            'id' => $id,
+            'role' => auth()->user()->role
+        ]);
     }
 
     public function destroy(SmartMeter $smartMeter)
