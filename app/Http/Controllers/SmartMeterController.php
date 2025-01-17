@@ -110,6 +110,12 @@ class SmartMeterController extends Controller
         }
     }
 
+    public function destroy(SmartMeter $smartMeter)
+    {
+        $smartMeter->delete();
+        return redirect()->route('sockets')->with('success', 'Slimme meter succesvol verwijderd!');
+    }   
+
 
     public function setPower(SmartMeter $smartMeter, Request $request)
     {
