@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use PhpMqtt\Client\MqttClient;
 use PhpMqtt\Client\ConnectionSettings;
-
 class SmartMeterController extends Controller
 {
     private function getMqttClient()
@@ -109,6 +108,23 @@ class SmartMeterController extends Controller
                 ->with('error', 'Er is een fout opgetreden bij het toevoegen van de meter: ' . $e->getMessage());
         }
     }
+
+    public function show($id)
+    {
+        $smartMeter = SmartMeter::where('socket_id', $id)->first();
+        
+        if (!$smartMeter) {
+            return view('sockets.socket', ['error' => 'Socket niet met id: ' . $id . ' niet gevonden', 'id' => $id]);
+        }
+
+        return view('sockets.socket', ['id' => $id]);
+    }
+
+    public function destroy(SmartMeter $smartMeter)
+    {
+        $smartMeter->delete();
+        return redirect()->route('sockets')->with('success', 'Slimme meter succesvol verwijderd!');
+    }   
 
 
     public function setPower(SmartMeter $smartMeter, Request $request)

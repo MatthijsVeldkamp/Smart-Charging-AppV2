@@ -1,7 +1,29 @@
 <x-app-layout>
     @section('content')
     <x-hamburger-menu />
-
+    <div class="fixed inset-0 z-0 animate-fade-in">
+            <div class="absolute inset-0 bg-[linear-gradient(to_right,#1f1f1f_1px,transparent_1px),linear-gradient(to_bottom,#1f1f1f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_40%,transparent_100%)]" id="grid-background">
+                <!-- First set of grid squares -->
+                <div class="grid-squares absolute w-full h-full transition-transform duration-1000" id="grid-set-1">
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 4rem; left: 8rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 12rem; left: 20rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 8rem; left: 28rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 16rem; left: 16rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 20rem; left: 24rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 24rem; left: 12rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 28rem; left: 32rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 8rem; left: 40rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 16rem; left: 36rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 4rem; left: 24rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 32rem; left: 16rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 20rem; left: 44rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 28rem; left: 8rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 12rem; left: 48rem;"></div>
+                    <div class="absolute w-16 h-16 bg-[#141414] opacity-40 border border-white/5" style="top: 36rem; left: 28rem;"></div>
+                </div>
+                
+            </div>
+        </div>
         <!-- Main Content -->
         <main class="relative z-10 min-h-screen flex flex-col items-center px-4 sm:px-6 lg:px-8 py-12">
             <div class="text-center welcome-fade-in mb-12">
@@ -11,10 +33,7 @@
                 </p>
             </div>
 
-            <!-- Loading Spinner -->
-            <div id="loading-spinner" class="hidden">
-                <div class="loader"></div>
-            </div>
+
 
             <!-- Formulier voor nieuwe meter -->
             <div class="bg-primary/50 p-6 rounded-lg border border-accent/50 max-w-md w-full">
@@ -34,7 +53,7 @@
                                placeholder="Bijv. Garage Laadpunt">
                     </div>
                     <button type="submit" 
-                            class="w-full bg-accent text-text px-4 py-2 rounded-md hover:bg-accent/90 transition-colors">
+                            class="w-full bg-gray-900 text-text px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">
                         Meter Toevoegen
                     </button>
                 </form>
@@ -42,10 +61,12 @@
 
             <!-- Lijst van bestaande meters -->
             <div class="mt-12 w-full max-w-4xl">
-                <h2 class="text-2xl font-bold mb-4 text-text">Geïnstalleerde Meters</h2>
+                @if(count($smartMeters ?? []) > 0)
+                    <h2 class="text-2xl font-bold mb-4 text-text">Geïnstalleerde Meters</h2>
+                @endif
                 <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     @foreach($smartMeters ?? [] as $meter)
-                        <div class="bg-primary/50 p-4 rounded-lg border border-accent/50">
+                        <div class="bg-primary/50 p-4 rounded-lg border border-accent/50" data-meter-id="{{ $meter->id }}" data-status="{{ $meter->status }}">
                             <div class="flex justify-between items-start mb-2">
                                 <h3 class="font-bold text-lg">{{ $meter->name }}</h3>
                                 <div class="flex space-x-2">
@@ -63,7 +84,14 @@
                                             {{ $meter->status === 'inactive' ? 'disabled' : '' }}>
                                         Uit
                                     </button>
-                                </div>
+                                    <form action="{{ route('smart-meters.destroy', $meter->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" onclick="return confirm('Weet je zeker dat je deze meter wilt verwijderen?')"
+                                                class="px-3 py-1 rounded-md text-sm font-medium bg-red-800 hover:bg-red-900 transition-colors">
+                                            Verwijder
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                             <p class="text-sm text-secondary">ID: {{ $meter->socket_id }}</p>
