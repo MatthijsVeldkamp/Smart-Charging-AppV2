@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\SmartMeterController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AddSocketController;
+use App\Http\Controllers\SocketController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -40,8 +41,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('smart-meters.power')
         ->middleware('web');
     Route::get('/sockets/add/{id}', [AddSocketController::class, 'index'])->name('sockets.add');
-    Route::get('/adminpage', [AdminController::class, 'index']);
-
+    Route::get('/socket/{id}', [SmartMeterController::class, 'show'])->name('socket.show');
 });
 
 Route::get('/socket-statuses', [SmartMeterController::class, 'getAllSocketStatuses'])->middleware('auth');

@@ -66,7 +66,7 @@
                 @endif
                 <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     @foreach($smartMeters ?? [] as $meter)
-                        <div class="bg-primary/50 p-4 rounded-lg border border-accent/50">
+                        <div class="bg-primary/50 p-4 rounded-lg border border-accent/50" data-meter-id="{{ $meter->id }}" data-status="{{ $meter->status }}">
                             <div class="flex justify-between items-start mb-2">
                                 <h3 class="font-bold text-lg">{{ $meter->name }}</h3>
                                 <div class="flex space-x-2">
@@ -84,7 +84,14 @@
                                             {{ $meter->status === 'inactive' ? 'disabled' : '' }}>
                                         Uit
                                     </button>
-                                </div>
+                                    <form action="{{ route('smart-meters.destroy', $meter->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" onclick="return confirm('Weet je zeker dat je deze meter wilt verwijderen?')"
+                                                class="px-3 py-1 rounded-md text-sm font-medium bg-red-800 hover:bg-red-900 transition-colors">
+                                            Verwijder
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                             <p class="text-sm text-secondary">ID: {{ $meter->socket_id }}</p>
