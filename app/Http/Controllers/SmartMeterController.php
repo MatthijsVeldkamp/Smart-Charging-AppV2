@@ -111,6 +111,12 @@ class SmartMeterController extends Controller
 
     public function show($id)
     {
+        $smartMeter = SmartMeter::where('socket_id', $id)->first();
+        
+        if (!$smartMeter) {
+            return view('sockets.socket', ['error' => 'Socket niet met id: ' . $id . ' niet gevonden', 'id' => $id]);
+        }
+
         return view('sockets.socket', ['id' => $id]);
     }
 
