@@ -175,30 +175,36 @@ class SmartMeterController extends Controller
         }
     }
 
-    public function getMeasurements(SmartMeter $smartMeter)
+    public function getMeasurements($id)
     {
+        $smartMeter = SmartMeter::where('socket_id', $id)->first();
         try {
-            $response = Http::get("http://{$smartMeter->ip_address}/cm?cmnd=Status%208");
+            $response = Http::get("http://192.168.0.128/cm?cmnd=Status%208");
             
             if ($response->successful()) {
                 $data = $response->json();
                 return response()->json([
                     'success' => true,
-                    'data' => [
-                        'power' => $data['StatusSNS']['ENERGY']['Power'] ?? 'N/A',
-                        'voltage' => $data['StatusSNS']['ENERGY']['Voltage'] ?? 'N/A',
-                        'current' => $data['StatusSNS']['ENERGY']['Current'] ?? 'N/A',
-                        'total_energy' => $data['StatusSNS']['ENERGY']['Total'] ?? 'N/A',
-                    ]
+                    'data' => $data
                 ]);
             }
 
-            throw new \Exception('Failed to get measurements');
-        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Kon de metingen niet ophalen: ' . $e->getMessage()
+                'message' => 'Failed to fetch measurements'
+            ], 500);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to get measurements', [
+                'socket_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching measurements: ' . $e->getMessage()
             ], 500);
         }
+        return response()->json($request);
     }
-} 
+}
