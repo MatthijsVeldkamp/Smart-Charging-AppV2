@@ -68,7 +68,7 @@
                     @foreach($smartMeters ?? [] as $meter)
                         <div class="bg-primary/50 p-4 rounded-lg border border-accent/50" data-meter-id="{{ $meter->id }}" data-status="{{ $meter->status }}">
                             <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold text-lg">{{ $meter->name }}</h3>
+                                <h3 class="font-bold text-lg"><a href="/socket/{{ $meter->socket_id }}" class="hover:underline">{{ $meter->name }}</a></h3>
                                 <div class="flex space-x-2">
                                     <button onclick="setPower({{ $meter->id }}, 'on')"
                                             data-action="on" 

@@ -32,6 +32,12 @@
                 md:w-[800px] md:max-w-[800px]
                 lg:w-[800px]
                 xl:w-[800px]">
+                <a href="/sockets" class="inline-flex items-center text-text hover:text-accent transition-colors mb-6">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Terug naar Socket Beheer
+                </a>
                 <h2 class="text-2xl font-bold mb-4 text-text">Socket Details</h2>
                 @if(isset($error))
                     <p class="text-red-500">{{ $error }}</p>
