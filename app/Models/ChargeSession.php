@@ -13,6 +13,7 @@ class ChargeSession extends Model
         'socket_id',
         'time_begin', 
         'time_end',
+        'user_id',
         'power_consumption',
         'created_at',
         'updated_at'

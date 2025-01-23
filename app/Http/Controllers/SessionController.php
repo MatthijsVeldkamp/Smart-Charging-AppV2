@@ -11,6 +11,7 @@ class SessionController extends Controller
     {
         $session = new \App\Models\ChargeSession();
         $session->socket_id = $id;
+        $session->user_id = auth()->user()->id;
         $session->time_begin = now();
         $session->save();
 

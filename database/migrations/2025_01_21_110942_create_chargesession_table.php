@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('charge_sessions', function (Blueprint $table) {
             $table->id();
             $table->string('socket_id');
+            $table->string('user_id');
             $table->timestamp('time_begin')->nullable();
             $table->timestamp('time_end')->nullable(); 
             $table->decimal('power_consumption', 8, 2)->default(0);
