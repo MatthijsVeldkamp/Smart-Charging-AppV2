@@ -129,49 +129,50 @@ class SmartMeterController extends Controller
         return redirect()->route('sockets')->with('success', 'Slimme meter succesvol verwijderd!');
     }   
 
-
-    public function setPower(SmartMeter $smartMeter, Request $request)
+    public function setPowerOn(SmartMeter $smartMeter, Request $request)
     {
         try {
-            $mqtt = $this->getMqttClient();
-            
-            // Maak verbinding met de MQTT server
-            $connectionSettings = (new ConnectionSettings)
-                ->setUsername(env('MQTT_USERNAME', 'powerapp'))
-                ->setPassword(env('MQTT_PASSWORD', 'BeetleFanta24'));
-            
-            $mqtt->connect($connectionSettings);
-            
-            // Direct commando sturen via MQTT
-            $topic = "cmnd/tasmota_" . $smartMeter->socket_id . "/POWER";
-            $command = $request->action === 'on' ? 'ON' : 'OFF';
-            
-            \Log::info('Sending MQTT command', [
-                'topic' => $topic,
-                'command' => $command
-            ]);
-            
-            $mqtt->publish($topic, $command, 0);
-            $mqtt->disconnect();
+            // Send power on command to the device with hardcoded IP
+            $response = Http::get("http://192.168.92.185/cm?cmnd=Power%20On");
 
-            // Update database status
-            $newStatus = $request->action === 'on' ? 'active' : 'inactive';
-            $smartMeter->update(['status' => $newStatus]);
+            if ($response->successful()) {
+                // Update the status in database
+                $smartMeter->update(['status' => 'active']);
+                return redirect()->route('sockets')
+                    ->with('success', 'Power turned on successfully');
+            }
 
-            return response()->json([
-                'success' => true,
-                'status' => $newStatus,
-                'message' => 'Socket status succesvol bijgewerkt'
-            ]);
+            throw new \Exception('Failed to turn power on');
+
         } catch (\Exception $e) {
-            \Log::error('MQTT command failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            \Log::error('Failed to turn power on', [
+                'smart_meter_id' => $smartMeter->id,
+                'error' => $e->getMessage()
             ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Kon de socket status niet bijwerken: ' . $e->getMessage()
-            ], 500);
+
+            return redirect()->route('sockets')
+                ->with('error', 'Failed to turn power on: ' . $e->getMessage());
+        }
+    }
+
+    public function setPowerOff(SmartMeter $smartMeter, Request $request)
+    {
+        try {
+            // Send power off command to the device with hardcoded IP
+            $response = Http::get("http://192.168.92.185/cm?cmnd=Power%20Off");
+
+            if ($response->successful()) {
+                // Update the status in database
+                $smartMeter->update(['status' => 'inactive']);
+                return redirect()->route('sockets')
+                    ->with('success', 'Power turned off successfully');
+            }
+
+            throw new \Exception('Failed to turn power off');
+
+        } catch (\Exception $e) {
+            return redirect()->route('sockets')
+                ->with('error', 'Failed to turn power off: ' . $e->getMessage());
         }
     }
 
@@ -179,7 +180,7 @@ class SmartMeterController extends Controller
     {
         $smartMeter = SmartMeter::where('socket_id', $id)->first();
         try {
-            $response = Http::get("http://192.168.0.128/cm?cmnd=Status%208");
+            $response = Http::get("http://192.168.92.185/cm?cmnd=Status%208/cm?cmnd=Status%208");
             
             if ($response->successful()) {
                 $data = $response->json();

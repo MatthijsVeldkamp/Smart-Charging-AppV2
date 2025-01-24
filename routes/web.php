@@ -37,8 +37,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/smart-meters', [SmartMeterController::class, 'store'])->name('smart-meters.store');
     Route::post('/smart-meters/{smartMeter}/toggle', [SmartMeterController::class, 'togglePower'])->name('smart-meters.toggle');
     Route::delete('/smart-meters/{smartMeter}', [SmartMeterController::class, 'destroy'])->name('smart-meters.destroy');
-    Route::post('/smart-meters/{smartMeter}/power', [SmartMeterController::class, 'setPower'])
-        ->name('smart-meters.power')
+    Route::get('/smart-meters/{smartMeter}/power', [SmartMeterController::class, 'setPowerOn'])
+        ->name('smart-meters.poweron')
+        ->middleware('web');
+    Route::get('/smart-meters/{smartMeter}/poweroff', [SmartMeterController::class, 'setPowerOff'])
+        ->name('smart-meters.poweroff')
         ->middleware('web');
     Route::get('/sockets/add/{id}', [AddSocketController::class, 'index'])->name('sockets.add');
     Route::get('/socket/{id}', [SmartMeterController::class, 'show'])->name('socket.show');

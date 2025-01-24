@@ -60,6 +60,17 @@
             </div>
 
             <!-- Lijst van bestaande meters -->
+            @if(session('success'))
+                <div class="mt-4 w-full max-w-4xl bg-green-500/20 border border-green-500/50 text-green-500 p-4 rounded-lg">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="mt-4 w-full max-w-4xl bg-red-500/20 border border-red-500/50 text-red-500 p-4 rounded-lg">
+                    {{ session('error') }}
+                </div>
+            @endif
             <div class="mt-12 w-full max-w-4xl">
                 @if(count($smartMeters ?? []) > 0)
                     <h2 class="text-2xl font-bold mb-4 text-text">Geïnstalleerde Meters</h2>
@@ -70,14 +81,14 @@
                             <div class="flex justify-between items-start mb-2">
                                 <h3 class="font-bold text-lg">{{ $meter->name }}</h3>
                                 <div class="flex space-x-2">
-                                    <button onclick="setPower({{ $meter->id }}, 'on')"
+                                    <button onclick="window.location.href='{{ route('smart-meters.poweron', ['smartMeter' => $meter->id]) }}'"
                                             data-action="on" 
                                             data-meter-id="{{ $meter->id }}"
                                             class="power-btn-on px-3 py-1 rounded-md text-sm font-medium transition-colors {{ $meter->status === 'active' ? 'bg-green-500 cursor-not-allowed opacity-50' : 'bg-green-500 hover:bg-green-600' }}"
                                             {{ $meter->status === 'active' ? 'disabled' : '' }}>
                                         Aan
                                     </button>
-                                    <button onclick="setPower({{ $meter->id }}, 'off')"
+                                    <button onclick="window.location.href='{{ route('smart-meters.poweroff', ['smartMeter' => $meter->id]) }}'"
                                             data-action="off"
                                             data-meter-id="{{ $meter->id }}"
                                             class="power-btn-off px-3 py-1 rounded-md text-sm font-medium transition-colors {{ $meter->status === 'inactive' ? 'bg-red-500 cursor-not-allowed opacity-50' : 'bg-red-500 hover:bg-red-600' }}"
@@ -131,58 +142,6 @@
                 if (statusText) {
                     statusText.textContent = `Status: ${status === 'active' ? 'Actief' : 'Inactief'}`;
                 }
-            }
-
-            function setPower(meterId, action) {
-                const loadingSpinner = document.getElementById('loading-spinner');
-                const onButton = document.querySelector(`.power-btn-on[data-meter-id="${meterId}"]`);
-                const offButton = document.querySelector(`.power-btn-off[data-meter-id="${meterId}"]`);
-                
-                // Disable both buttons during request
-                onButton.disabled = true;
-                offButton.disabled = true;
-                loadingSpinner.classList.remove('hidden');
-
-                fetch(`/smart-meters/${meterId}/power`, {
-                    method: 'POST', 
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ action: action })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        updateButtonStates(meterId, data.status);
-                        
-                        // Success feedback
-                        const button = action === 'on' ? onButton : offButton;
-                        button.classList.add('bg-green-500');
-                        setTimeout(() => {
-                            button.classList.remove('bg-green-500');
-                        }, 1000);
-                    } else {
-                        throw new Error(data.message || 'Er ging iets mis');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Er ging iets mis bij het schakelen van de socket: ' + error.message);
-                    
-                    // Error feedback
-                    const button = action === 'on' ? onButton : offButton;
-                    button.classList.add('bg-red-500');
-                    setTimeout(() => {
-                        button.classList.remove('bg-red-500');
-                    }, 1000);
-                })
-                .finally(() => {
-                    loadingSpinner.classList.add('hidden');
-                    // Re-enable buttons
-                    updateButtonStates(meterId, action === 'on' ? 'active' : 'inactive');
-                });
             }
 
             // Wacht tot het document geladen is
