@@ -32,6 +32,12 @@
                 md:w-[800px] md:max-w-[800px]
                 lg:w-[800px]
                 xl:w-[800px]">
+                <a href="/sockets" class="inline-flex items-center text-text hover:text-accent transition-colors mb-6">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Terug naar Socket Beheer
+                </a>
                 <h2 class="text-2xl font-bold mb-4 text-text">Socket Details</h2>
                 @if(isset($error))
                     <p class="text-red-500">{{ $error }}</p>
@@ -170,43 +176,153 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        </div>
-
-                                        <script>
-                                        function toggleAccordion(button, id) {
-                                            const content = document.getElementById(id);
-                                            const arrow = button.querySelector('svg');
-                                            
-                                            // Close all accordions first
-                                            const allAccordions = document.querySelectorAll('[id^="admin-log"], [id^="settings"]');
-                                            const allArrows = document.querySelectorAll('button svg');
-                                            
-                                            allAccordions.forEach(accordion => {
-                                                if (accordion.id !== id) {
-                                                    accordion.style.maxHeight = null;
-                                                }
-                                            });
-                                            
-                                            allArrows.forEach(arr => {
-                                                if (arr !== arrow) {
-                                                    arr.style.transform = '';
-                                                }
-                                            });
-                                            
-                                            // Toggle the clicked accordion
-                                            arrow.style.transform = content.style.maxHeight ? '' : 'rotate(180deg)';
-                                            
-                                            if (content.style.maxHeight) {
-                                                content.style.maxHeight = null;
-                                            } else {
-                                                content.style.maxHeight = content.scrollHeight + "px";
-                                            }
-                                        }
-                                        </script>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="w-full">
+                                <div class="border border-accent/50 rounded-lg">
+                                    <button class="flex justify-between items-center w-full p-4 text-text font-mono hover:bg-primary/30 transition-colors" onclick="toggleAccordion(this, 'laadsessie')">
+                                        <div class="flex items-center">
+                                            <div class="pr-2 mr-2 border-r border-accent/50 h-full">
+                                                <i class="fas fa-charging-station"></i>
+                                            </div>
+                                            <span>Laadsessie</span>
+                                        </div>
+                                        <svg class="w-5 h-5 transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </button>
+                                    <div id="laadsessie" class="max-h-0 overflow-hidden border-t border-accent/50 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]">
+                                        <div class="space-y-4 p-4">
+                                            <!-- Session Status -->
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-text font-mono">Status:</span>
+                                                <span id="session-status" class="text-text font-mono">Laden...</span>
+                                            </div>
+                                            <script>
+                                                function updateSessionStatus() {
+                                                    fetch(`/socket/{{ $id }}/status`)
+                                                        .then(response => response.json())
+                                                        .then(data => {
+                                                            const statusElement = document.getElementById('session-status');
+                                                            statusElement.textContent = data.status === 'on' ? 'Actief' : 'Inactief';
+                                                        })
+                                                        .catch(error => console.error('Error:', error));
+                                                }
+                                                
+                                                // Update status immediately and every second
+                                                updateSessionStatus();
+                                                setInterval(updateSessionStatus, 1000);
+                                            </script>
+
+                                            <!-- Session Info -->
+                                            <div id="session-info" class="space-y-2 hidden">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-text font-mono">Verbruik:</span>
+                                                    <span id="session-kwh" class="text-text font-mono">0 kWh</span>
+                                                </div>
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-text font-mono">Start tijd:</span>
+                                                    <span id="session-start" class="text-text font-mono">--:--</span>
+                                                </div>
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-text font-mono">Duur:</span>
+                                                    <span id="session-duration" class="text-text font-mono">0 minuten</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Session Controls -->
+                                            <div class="flex justify-end space-x-4">
+                                                <form action="/socket/{{ $id }}/start" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit" id="start-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors">
+                                                        Start Sessie
+                                                    </button>
+                                                </form>
+                                                <form action="/socket/{{ $id }}/stop" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit" id="stop-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-colors">
+                                                        Stop Sessie
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            </div>
+
+                                            <script>
+                                                let startTime;
+                                                let durationInterval;
+
+                                                function updateDuration() {
+                                                    const now = new Date();
+                                                    const diffMs = now - startTime;
+                                                    const diffMins = Math.floor(diffMs / 60000);
+                                                    document.getElementById('session-duration').textContent = `${diffMins} minuten`;
+                                                    
+                                                    // Simulate kWh increase (for demo purposes)
+                                                    const kWh = (diffMins * 0.1).toFixed(2);
+                                                    document.getElementById('session-kwh').textContent = `${kWh} kWh`;
+                                                }
+
+                                                function startSession() {
+                                                    startTime = new Date();
+                                                    document.getElementById('session-status').textContent = 'Actief';
+                                                    document.getElementById('session-start').textContent = startTime.toLocaleTimeString();
+                                                    document.getElementById('session-info').classList.remove('hidden');
+                                                    document.getElementById('start-btn').classList.add('hidden');
+                                                    document.getElementById('stop-btn').classList.remove('hidden');
+                                                    
+                                                    durationInterval = setInterval(updateDuration, 60000); // Update every minute
+                                                }
+
+                                                function stopSession() {
+                                                    clearInterval(durationInterval);
+                                                    document.getElementById('session-status').textContent = 'Inactief';
+                                                    document.getElementById('session-info').classList.add('hidden');
+                                                    document.getElementById('stop-btn').classList.add('hidden');
+                                                    document.getElementById('start-btn').classList.remove('hidden');
+                                                }
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                        function toggleAccordion(button, id) {
+                            const content = document.getElementById(id);
+                            const arrow = button.querySelector('svg');
+                            
+                            // Close all accordions first
+                            const allAccordions = document.querySelectorAll('[id^="admin-log"], [id^="settings"], [id^="laadsessie"]');
+                            const allArrows = document.querySelectorAll('button svg');
+                            
+                            allAccordions.forEach(accordion => {
+                                if (accordion.id !== id) {
+                                    accordion.style.maxHeight = null;
+                                }
+                            });
+                            
+                            allArrows.forEach(arr => {
+                                if (arr !== arrow) {
+                                    arr.style.transform = '';
+                                }
+                            });
+                            
+                            // Toggle the clicked accordion
+                            arrow.style.transform = content.style.maxHeight ? '' : 'rotate(180deg)';
+                            
+                            if (content.style.maxHeight) {
+                                content.style.maxHeight = null;
+                            } else {
+                                content.style.maxHeight = content.scrollHeight + "px";
+                            }
+                        }
+                        </script>
+                        
                         @endif
                     </div>
                 @endif

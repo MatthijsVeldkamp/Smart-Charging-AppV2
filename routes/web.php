@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AddSocketController;
 use App\Http\Controllers\SocketController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SessionController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -41,7 +42,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('smart-meters.power')
         ->middleware('web');
     Route::get('/sockets/add/{id}', [AddSocketController::class, 'index'])->name('sockets.add');
+    Route::get('/socket/{id}/status', [SessionController::class, 'status'])->name('socket.status');
     Route::get('/socket/{id}', [SmartMeterController::class, 'show'])->name('socket.show');
+    Route::post('/socket/{id}/start', [SessionController::class, 'startSession'])->name('socket.start');
+    Route::post('/socket/{id}/stop', [SessionController::class, 'stopSession'])->name('socket.stop');
 });
 Route::get('/socket/status/{id}', [SmartMeterController::class, 'getMeasurements'])->middleware('auth');
 Route::get('/socket-measurements/{id}', [SmartMeterController::class, 'getMeasurements'])->name('socket-measurements');
