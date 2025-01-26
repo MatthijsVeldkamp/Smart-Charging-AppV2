@@ -17,7 +17,9 @@ return new class extends Migration
             $table->string('user_id');
             $table->timestamp('time_begin')->nullable();
             $table->timestamp('time_end')->nullable(); 
-            $table->decimal('power_consumption', 8, 2)->default(0);
+            $table->decimal('total_energy_on_start', 8, 4)->default(0)->nullable();
+            $table->decimal('total_energy_on_end', 8, 4)->default(0)->nullable();
+            $table->decimal('used_energy_total', 8, 4)->default(0)->nullable();
             $table->timestamps();
         });
     }
