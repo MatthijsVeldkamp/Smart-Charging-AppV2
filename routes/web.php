@@ -52,6 +52,6 @@ Route::middleware(['auth'])->group(function () {
 });
 Route::get('/socket/status/{id}', [SmartMeterController::class, 'getMeasurements'])->middleware('auth');
 Route::get('/socket-measurements/{id}', [SmartMeterController::class, 'getMeasurements'])->name('socket-measurements');
-
-
+Route::get('/save-measurements/{id}', [SmartMeterController::class, 'saveMeasurements'])->name('socket-measurements.save');
+Route::get('/socketcurrent/{id}', [SmartMeterController::class, 'getCurrent'])->name('socket-current');
 require __DIR__.'/auth.php';
