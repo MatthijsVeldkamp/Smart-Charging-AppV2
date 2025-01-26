@@ -241,7 +241,11 @@ class SmartMeterController extends Controller
             ], 500);
         }
     }
-
+    public function getEnergyTotal($id)
+    {
+        $smartMeter = SmartMeter::where('socket_id', $id)->first();
+        return view('sockets.socket', compact('smartMeter'));
+    }
 
     public function saveMeasurements($id)
     {

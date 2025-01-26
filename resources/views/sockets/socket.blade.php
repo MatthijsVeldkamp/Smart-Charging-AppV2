@@ -375,10 +375,10 @@
             datasets: [{
                 label: 'Current (A)', 
                 data: [],
-                borderColor: 'white',
+                borderColor: '#00ff00',
                 backgroundColor: (context) => {
                     const gradient = context.chart.ctx.createLinearGradient(0, 0, 0, context.chart.height);
-                    gradient.addColorStop(0, 'white');
+                    gradient.addColorStop(0, '#00ff00');
                     gradient.addColorStop(1, 'black');
                     return gradient;
                 },
@@ -388,11 +388,12 @@
         },
         options: {
             responsive: true,
+
             scales: {
                 x: {
                     display: true,
                     title: {
-                        display: true,
+                        display: false,
                         text: 'Time',
                         color: 'white'
                     },
@@ -411,17 +412,17 @@
                         color: 'white'
                     },
                     ticks: {
-                        color: 'white'
+                        color: 'white',
                     },
                     grid: {
                         color: 'rgba(255, 255, 255, 0.1)'
                     },
-                    suggestedMin: 200,
-                    suggestedMax: 300
+                    suggestedMin: 0,
+                    suggestedMax: 1000
                 }
             },
             animation: {
-                duration: 0
+                duration: 1000
             },
             plugins: {
                 legend: {
@@ -462,5 +463,5 @@
     }
 
     updateMeasurements();
-    setInterval(updateMeasurements, 2000);
+    setInterval(updateMeasurements, 5000);
 </script>
