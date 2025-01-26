@@ -17,6 +17,7 @@
         "vite": "^6.0"
     },
     "dependencies": {
+        "chartjs": "^0.3.24",
         "mqtt": "^5.10.3"
     }
 }

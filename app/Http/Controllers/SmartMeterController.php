@@ -133,8 +133,7 @@ class SmartMeterController extends Controller
     public function setPowerOn(SmartMeter $smartMeter, Request $request)
     {
         try {
-            // Send power on command to the device with hardcoded IP
-            $response = Http::get("http://192.168.92.185/cm?cmnd=Power%20On");
+            $response = Http::get("http://{$smartMeter->ip_address}/cm?cmnd=Power%20On");
 
             if ($response->successful()) {
                 // Update the status in database
@@ -159,8 +158,7 @@ class SmartMeterController extends Controller
     public function setPowerOff(SmartMeter $smartMeter, Request $request)
     {
         try {
-            // Send power off command to the device with hardcoded IP
-            $response = Http::get("http://192.168.92.185/cm?cmnd=Power%20Off");
+            $response = Http::get("http://{$smartMeter->ip_address}/cm?cmnd=Power%20Off");
 
             if ($response->successful()) {
                 // Update the status in database
@@ -179,22 +177,20 @@ class SmartMeterController extends Controller
 
     public function getMeasurements($id)
     {
-        $smartMeter = SmartMeter::where('socket_id', $id)->first();
         try {
-            $response = Http::get("http://192.168.92.185/cm?cmnd=Status%208/cm?cmnd=Status%208");
+            $smartMeter = SmartMeter::where('socket_id', $id)->first();
             
-            if ($response->successful()) {
-                $data = $response->json();
+            if (!$smartMeter) {
                 return response()->json([
-                    'success' => true,
-                    'data' => $data
-                ]);
+                    'success' => false,
+                    'message' => 'Smart meter not found'
+                ], 404);
             }
 
             return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch measurements'
-            ], 500);
+                'success' => true,
+                'data' => $smartMeter->measurements
+            ]);
 
         } catch (\Exception $e) {
             \Log::error('Failed to get measurements', [
@@ -207,6 +203,80 @@ class SmartMeterController extends Controller
                 'message' => 'Error fetching measurements: ' . $e->getMessage()
             ], 500);
         }
-        return response()->json($request);
+    }
+
+
+
+    public function getCurrent($id)
+    {
+        try {
+            $smartMeter = SmartMeter::where('socket_id', $id)->first();
+            
+            if (!$smartMeter) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Smart meter not found'
+                ], 404);
+            }
+
+            $data = json_decode($smartMeter->measurements);
+            
+            if (!$data || !isset($data->StatusSNS->ENERGY->Current)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Current data not available'
+                ], 404);
+            }
+
+            $current = $data->StatusSNS->ENERGY->Current;
+            return response()->json([
+                'success' => true,
+                'current' => $current * 1000
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching current: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    public function getEnergyTotal($id)
+    {
+        $smartMeter = SmartMeter::where('socket_id', $id)->first();
+        return view('sockets.socket', compact('smartMeter'));
+    }
+
+    public function saveMeasurements($id)
+    {
+        try {
+            $smartMeter = SmartMeter::where('socket_id', $id)->firstOrFail();
+            
+            if (!$smartMeter->ip_address) {
+                throw new \Exception('IP address not set for this smart meter');
+            }
+
+            $response = Http::get("http://{$smartMeter->ip_address}/cm?cmnd=Status%208");
+            
+            if (!$response->successful()) {
+                throw new \Exception('Failed to fetch measurements from device');
+            }
+
+            $data = $response->json();
+            $smartMeter->measurements = $data;
+            $smartMeter->save();
+
+            return response()->json(['success' => true, 'data' => $data]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to save measurements', [
+                'socket_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

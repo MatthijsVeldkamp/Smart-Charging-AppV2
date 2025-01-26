@@ -25,6 +25,7 @@
             </div>
         </div>
         <!-- Main Content -->
+         
         <main class="relative z-10 min-h-screen flex flex-col items-center px-4 sm:px-6 lg:px-8 py-12">
             
             <div class="bg-primary/50 p-6 rounded-lg border border-accent/50 w-[95%] max-w-[800px] 
@@ -50,6 +51,30 @@
                         
 
                         <div class="w-full">
+                            <div class="flex items-center justify-between mt-4 mb-4">
+                            <div class="w-full">
+                                <div class="border border-accent/50 rounded-lg">
+                                    <button class="flex justify-between items-center w-full p-4 text-text font-mono hover:bg-primary/30 transition-colors" onclick="toggleAccordion(this, 'info')">
+                                        <div class="flex items-center">
+                                            <div class="pr-2 mr-2 border-r border-accent/50 h-full">
+                                                <i class="fas fa-chart-line"></i>
+                                            </div>
+                                            <span>Current Graph</span>
+                                        </div>
+                                        <svg class="w-5 h-5 transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </button>
+                                    <div id="info" class="max-h-0 overflow-hidden border-t border-accent/50 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]">
+                                        <div class="p-4">
+                                            <div class="bg-primary/30 rounded-lg p-4">
+                                                <canvas id="measurementsChart" class="w-full h-[400px]"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                             <div class="border border-accent/50 rounded-lg">
                                 <button class="flex justify-between items-center w-full p-4 text-text font-mono hover:bg-primary/30 transition-colors" onclick="toggleAccordion(this, 'admin-log')">
                                     <div class="flex items-center">
@@ -179,6 +204,7 @@
                                     </div>
                                 </div>
                             </div>
+                            
                         </div>
 
                         <div class="flex items-center justify-between mt-4">
@@ -291,13 +317,17 @@
                             </div>
                         </div>
 
+
+                        
+                        
+                        
                         <script>
                         function toggleAccordion(button, id) {
                             const content = document.getElementById(id);
                             const arrow = button.querySelector('svg');
                             
                             // Close all accordions first
-                            const allAccordions = document.querySelectorAll('[id^="admin-log"], [id^="settings"], [id^="laadsessie"]');
+                            const allAccordions = document.querySelectorAll('[id^="admin-log"], [id^="settings"], [id^="laadsessie"], [id^="info"]');
                             const allArrows = document.querySelectorAll('button svg');
                             
                             allAccordions.forEach(accordion => {
@@ -330,3 +360,108 @@
         </main>
     @endsection
 </x-app-layout>
+
+<!-- Add Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Your existing script -->
+<script>
+    // Initialize the chart
+    const ctx = document.getElementById('measurementsChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Current (A)', 
+                data: [],
+                borderColor: '#00ff00',
+                backgroundColor: (context) => {
+                    const gradient = context.chart.ctx.createLinearGradient(0, 0, 0, context.chart.height);
+                    gradient.addColorStop(0, '#00ff00');
+                    gradient.addColorStop(1, 'black');
+                    return gradient;
+                },
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: false,
+                        text: 'Time',
+                        color: 'white'
+                    },
+                    ticks: {
+                        color: 'white'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                y: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Current (A)',
+                        color: 'white'
+                    },
+                    ticks: {
+                        color: 'white',
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    suggestedMin: 0,
+                    suggestedMax: 1000
+                }
+            },
+            animation: {
+                duration: 1000
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white'
+                    }
+                }
+            }
+        }
+    });
+
+    // Function to update measurements
+    async function updateMeasurements() {
+        try {
+            // First save new measurements
+            await fetch(`/save-measurements/{{ $id }}`);
+            
+            // Then fetch just the voltage
+            const response = await fetch(`/socketcurrent/{{ $id }}`);
+            let current = await response.json();
+            let finalcurrent = current.current;
+            console.log(finalcurrent);
+
+            // Add new data point to the chart
+            chart.data.labels.push(chart.data.labels.length + 1);
+            chart.data.datasets[0].data.push(finalcurrent);
+            
+            // Keep only the last 20 data points for better visualization
+            if (chart.data.labels.length > 20) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+            }
+            
+            chart.update();
+        } catch (error) {
+            console.error('Error updating measurements:', error);
+        }
+    }
+
+    updateMeasurements();
+    setInterval(updateMeasurements, 5000);
+</script>
