@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('socket_id')->unique();
             $table->string('name');
             $table->string('status')->default('inactive');
+            $table->string('ip_address')->default('81.172.179.159');
             $table->timestamps();
         });
     }

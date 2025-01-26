@@ -133,8 +133,7 @@ class SmartMeterController extends Controller
     public function setPowerOn(SmartMeter $smartMeter, Request $request)
     {
         try {
-            // Send power on command to the device with hardcoded IP
-            $response = Http::get("http://192.168.92.185/cm?cmnd=Power%20On");
+            $response = Http::get("http://{$smartMeter->ip_address}/cm?cmnd=Power%20On");
 
             if ($response->successful()) {
                 // Update the status in database
@@ -159,8 +158,7 @@ class SmartMeterController extends Controller
     public function setPowerOff(SmartMeter $smartMeter, Request $request)
     {
         try {
-            // Send power off command to the device with hardcoded IP
-            $response = Http::get("http://192.168.92.185/cm?cmnd=Power%20Off");
+            $response = Http::get("http://{$smartMeter->ip_address}/cm?cmnd=Power%20Off");
 
             if ($response->successful()) {
                 // Update the status in database
@@ -181,7 +179,7 @@ class SmartMeterController extends Controller
     {
         $smartMeter = SmartMeter::where('socket_id', $id)->first();
         try {
-            $response = Http::get("http://192.168.92.185/cm?cmnd=Status%208/cm?cmnd=Status%208");
+            $response = Http::get("http://{$smartMeter->ip_address}/cm?cmnd=Status%208");
             
             if ($response->successful()) {
                 $data = $response->json();
