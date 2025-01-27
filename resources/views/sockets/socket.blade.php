@@ -463,5 +463,6 @@
     }
 
     updateMeasurements();
-    setInterval(updateMeasurements, 5000);
+    // Update every 30 seconds
+    setInterval(updateMeasurements, 30000);
 </script>

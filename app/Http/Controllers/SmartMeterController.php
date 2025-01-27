@@ -279,4 +279,38 @@ class SmartMeterController extends Controller
             ], 500);
         }
     }
+
+    public function getTotalEnergy($id)
+    {
+        try {
+            $smartMeter = SmartMeter::where('socket_id', $id)->first();
+            
+            $response = Http::get("http://{$smartMeter->ip_address}/cm?cmnd=Status%208");
+            $data = $response->json();
+            $totalenergy = $data['StatusSNS']['ENERGY']['Total'];
+            return response()->json([
+                'success' => true,
+                'total' => $totalenergy
+            ]);
+            
+            // if (!$data || !isset($data->StatusSNS->ENERGY->Total)) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => 'Current data not available'
+            //     ], 404);
+            // }
+
+            // $total = $data->StatusSNS->ENERGY->Total;
+            // return response()->json([
+            //     'success' => true,
+            //     'total' => $total * 1000
+            // ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching total energy: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

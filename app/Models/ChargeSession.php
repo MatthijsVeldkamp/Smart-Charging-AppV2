@@ -14,7 +14,9 @@ class ChargeSession extends Model
         'time_begin', 
         'time_end',
         'user_id',
-        'power_consumption',
+        'total_energy_on_start',
+        'total_energy_on_end',
+        'used_energy_total',
         'created_at',
         'updated_at'
     ];
